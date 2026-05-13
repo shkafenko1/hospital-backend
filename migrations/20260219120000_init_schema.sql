@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS public.doctor
     last_name character varying(20) NOT NULL,
     specialization character varying(20) NOT NULL,
     office bigint NOT NULL,
-    license_mumber bigint NOT NULL,
+    license_number bigint NOT NULL,
     phone character varying(13) NOT NULL,
     experience bigint NOT NULL,
     PRIMARY KEY (id)

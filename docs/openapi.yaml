@@ -1,0 +1,559 @@
+openapi: 3.0.3
+info:
+  title: Hospital Backend API
+  description: |
+    REST API for the hospital management system.
+
+    ## Authentication
+    All `/api/*` endpoints (except `/api/auth/login`) require a JWT in the
+    `Authorization: Bearer <token>` header. Tokens are obtained via the login
+    endpoint and embed the user's role (`admin` or `user`).
+
+    ## Roles
+    - **admin**: full access (create/update/delete on doctors, wards, medicines).
+    - **user**: read-only on doctors, wards, medicines; full CRUD on patients,
+      visits and hospitalizations.
+
+    Default seeded accounts (password: `password`):
+    - `admin` / `password`
+    - `user`  / `password`
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+tags:
+  - name: Auth
+  - name: Patients
+  - name: Doctors
+  - name: Wards
+  - name: Medicines
+  - name: Hospitalizations
+  - name: Visits
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate and receive a JWT
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/patients:
+    get:
+      tags: [Patients]
+      summary: List all patients
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Patient' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Patients]
+      summary: Create patient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Patient' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Patient' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/patients/{id}:
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    get:
+      tags: [Patients]
+      summary: Get patient by ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Patient' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Patients]
+      summary: Update patient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Patient' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Patient' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    delete:
+      tags: [Patients]
+      summary: Delete patient
+      responses:
+        '204': { description: No Content }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/doctors:
+    get:
+      tags: [Doctors]
+      summary: List all doctors
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Doctor' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Doctors]
+      summary: Create doctor (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Doctor' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Doctor' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/doctors/{id}:
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    get:
+      tags: [Doctors]
+      summary: Get doctor by ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Doctor' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Doctors]
+      summary: Update doctor (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Doctor' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Doctor' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      tags: [Doctors]
+      summary: Delete doctor (admin only)
+      responses:
+        '204': { description: No Content }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/wards:
+    get:
+      tags: [Wards]
+      summary: List all wards
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Ward' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Wards]
+      summary: Create ward (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Ward' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ward' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/wards/{id}:
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    get:
+      tags: [Wards]
+      summary: Get ward by ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ward' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Wards]
+      summary: Update ward (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Ward' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ward' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      tags: [Wards]
+      summary: Delete ward (admin only)
+      responses:
+        '204': { description: No Content }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/medicines:
+    get:
+      tags: [Medicines]
+      summary: List all medicines
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Medicine' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Medicines]
+      summary: Create medicine (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Medicine' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Medicine' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/medicines/{id}:
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    get:
+      tags: [Medicines]
+      summary: Get medicine by ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Medicine' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Medicines]
+      summary: Update medicine (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Medicine' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Medicine' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      tags: [Medicines]
+      summary: Delete medicine (admin only)
+      responses:
+        '204': { description: No Content }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/hospitalizations:
+    get:
+      tags: [Hospitalizations]
+      summary: List all hospitalizations
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Hospitalization' }
+    post:
+      tags: [Hospitalizations]
+      summary: Create hospitalization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Hospitalization' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Hospitalization' }
+  /api/hospitalizations/{id}:
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    get:
+      tags: [Hospitalizations]
+      summary: Get hospitalization by ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Hospitalization' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Hospitalizations]
+      summary: Update hospitalization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Hospitalization' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Hospitalization' }
+    delete:
+      tags: [Hospitalizations]
+      summary: Delete hospitalization
+      responses:
+        '204': { description: No Content }
+
+  /api/visits:
+    get:
+      tags: [Visits]
+      summary: List all visits
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Visit' }
+    post:
+      tags: [Visits]
+      summary: Create visit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Visit' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Visit' }
+  /api/visits/{id}:
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    get:
+      tags: [Visits]
+      summary: Get visit by ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Visit' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Visits]
+      summary: Update visit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Visit' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Visit' }
+    delete:
+      tags: [Visits]
+      summary: Delete visit
+      responses:
+        '204': { description: No Content }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+  responses:
+    BadRequest:
+      description: Invalid request body
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string, example: admin }
+        password: { type: string, example: password }
+    LoginResponse:
+      type: object
+      properties:
+        token: { type: string }
+        role:  { type: string, enum: [admin, user] }
+
+    Patient:
+      type: object
+      properties:
+        id:          { type: integer, format: int64, readOnly: true }
+        passport:    { type: string, maxLength: 9, example: "AB1234567" }
+        first_name:  { type: string, maxLength: 20 }
+        middle_name: { type: string, maxLength: 20 }
+        last_name:   { type: string, maxLength: 20 }
+        phone:       { type: string, maxLength: 13, example: "+1234567" }
+        birth_date:  { type: string, format: date-time }
+        sex:         { type: string, example: "M" }
+        address:     { type: string, maxLength: 50 }
+
+    Doctor:
+      type: object
+      properties:
+        id:             { type: integer, format: int64, readOnly: true }
+        first_name:     { type: string }
+        middle_name:    { type: string }
+        last_name:      { type: string }
+        specialization: { type: string }
+        office:         { type: integer, format: int64 }
+        license_number: { type: integer, format: int64 }
+        phone:          { type: string }
+        experience:     { type: integer, format: int64 }
+
+    Ward:
+      type: object
+      properties:
+        id:       { type: integer, format: int64, readOnly: true }
+        number:   { type: integer, format: int64 }
+        floor:    { type: integer, format: int64 }
+        capacity: { type: integer, format: int64 }
+        price:    { type: integer, format: int64 }
+        comfort:  { type: string }
+        busy:     { type: boolean }
+
+    Medicine:
+      type: object
+      properties:
+        id:                { type: integer, format: int64, readOnly: true }
+        article:           { type: integer, format: int64 }
+        name:              { type: string }
+        active_substance:  { type: string }
+        form:              { type: string }
+        contraindications: { type: string }
+        prescription:      { type: boolean }
+
+    Hospitalization:
+      type: object
+      properties:
+        id:                  { type: integer, format: int64, readOnly: true }
+        type:                { type: string }
+        status:              { type: string }
+        beginning_date:      { type: string, format: date-time }
+        primary_diagnosis:   { type: string }
+        discharge_date:      { type: string, format: date-time, nullable: true }
+        discharge_diagnosis: { type: string, nullable: true }
+        patient_id:          { type: integer, format: int64 }
+        doctor_id:           { type: integer, format: int64 }
+        ward_id:             { type: integer, format: int64 }
+
+    Visit:
+      type: object
+      properties:
+        id:         { type: integer, format: int64, readOnly: true }
+        date_time:  { type: string, format: date-time }
+        symptoms:   { type: string }
+        diagnosis:  { type: string }
+        advise:     { type: string }
+        price:      { type: number, format: double }
+        patient_id: { type: integer, format: int64 }
+        doctor_id:  { type: integer, format: int64 }

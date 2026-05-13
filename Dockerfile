@@ -2,7 +2,7 @@ FROM golang:1.26-alpine AS builder
 
 WORKDIR /build
 
-COPY go.mod ./
+COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
@@ -15,6 +15,7 @@ WORKDIR /app
 
 COPY --from=builder /build/app .
 COPY --from=builder /build/migrations ./migrations
+COPY --from=builder /build/docs ./docs
 
 EXPOSE 8000
 CMD ["./app"]
